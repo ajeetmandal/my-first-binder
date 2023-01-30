@@ -1,5 +1,5 @@
 ###################################################################
-#library("SingleCellExperiment")
+library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
 ###########################################
