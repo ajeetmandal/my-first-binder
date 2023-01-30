@@ -3,7 +3,7 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install("iSEE")
 #BiocManager::install("SingleCellExperiment")
-
+install.packages("shiny")
 
 #install.packages("tidyverse")
 #install.packages("rmarkdown")
