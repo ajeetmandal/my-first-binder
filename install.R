@@ -1,6 +1,6 @@
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install("iSEE")
+BiocManager::install("iSEE", dependencies = TRUE)
 
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
