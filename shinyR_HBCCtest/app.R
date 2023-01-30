@@ -1,7 +1,7 @@
 ###################################################################
 #library("SingleCellExperiment")
 library("iSEE")
-#library("shiny")
+library("shiny")
 ###########################################
 sce_small <- readRDS("small_sce.rds")
 #class(sce_small)
