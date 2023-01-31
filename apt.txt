@@ -1,3 +1,2 @@
 libglpk-dev
 libgsl0-dev
-libgcc
