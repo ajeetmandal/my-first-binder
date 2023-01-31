@@ -118,7 +118,7 @@ initial[["FeatureAssayPlot1"]] <- new("FeatureAssayPlot", Assay = "logcounts", X
 
 iSEE(
   sce_small,
-  appTitle = "M.N. Tran et al 2021, {{region}} region https://bit.ly/LIBD10xHuman",
+  appTitle = "HBCC testing iSEE using M.N. Tran et al 2021, DLPFC https://bit.ly/LIBD10xHuman",
   initial = initial,
   colormap = ExperimentColorMap(colData = list(
     donor = function(n) {
