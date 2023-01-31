@@ -1,2 +1,3 @@
 libglpk-dev
 libgsl0-dev
+libfribidi.so.0
