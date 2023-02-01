@@ -4,7 +4,7 @@ library("shiny")
 library("ggplot2")
 
 #sce_small <- readRDS("small_sce.rds")
-sce_small <- load("SCE_DLPFC-n3_tran-etal.rda")
+sce_small <- load("small_sce_v1.rds")
 sce_small <- sce.dlpfc.tran
 #sce_small <- sce_small[,1:1000]
 # # Save a single object to a file
