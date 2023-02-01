@@ -1,136 +1,169 @@
-###################################################################
 library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
-###########################################
-sce_small <- readRDS("small_sce_v1.rds")
-#class(sce_small)
-#sce_small@colData
-#iSEE(sce_small)
-###########################################
-# Updated
+library("ggplot2")
 
-cell_colors <- readRDS("cell_colors_dlpfc.rds")
-stopifnot(packageVersion("iSEE") >= "2.4.0")
+#sce_small <- readRDS("small_sce.rds")
+sce_small <- load("SCE_DLPFC-n3_tran-etal.rda")
+sce_small <- sce.dlpfc.tran
+#sce_small <- sce_small[,1:1000]
+# # Save a single object to a file
+#saveRDS(sce_small, "/Users/mandala2/OneDrive - National Institutes of Health/shinyR_v4/small_sce_v1.rds")
+#sce_small <- readRDS("small_sce_v1.rds")
 
-## Related to https://github.com/iSEE/iSEE/issues/568
-colData(sce_small) <- cbind(
-  colData(sce_small)[, !colnames(colData(sce_small)) %in% c("donor", "cellType")],
-  colData(sce_small)[, c("cellType", "donor")]
-)
-
-initial <- list()
+#colData(sce_small)[,"sizeFactors(sce_small)"] <- sizeFactors(sce_small)
+colormap <- ExperimentColorMap()
+colormap <- synchronizeAssays(colormap, sce_small)
+all_coordinates <- list()
+custom_data_fun <- NULL
+custom_stat_fun <- NULL
 
 ################################################################################
-# Settings for Reduced dimension plot 1
+## Feature assay plot 1
 ################################################################################
 
-initial[["ReducedDimensionPlot1"]] <- new("ReducedDimensionPlot", Type = "PCA_corrected", XAxis = 1L,
-                                          YAxis = 2L, FacetRowByColData = "Barcode", FacetColumnByColData = "Barcode",
-                                          ColorByColumnData = "cellType", ColorByFeatureNameAssay = "logcounts",
-                                          ColorBySampleNameColor = "#FF0000", ShapeByColumnData = "donor",
-                                          SizeByColumnData = "sum", FacetRowBy = "None", FacetColumnBy = "None",
-                                          ColorBy = "Column data", ColorByDefaultColor = "#000000",
-                                          ColorByFeatureName = "SNAP25", ColorByFeatureSource = "---",
-                                          ColorByFeatureDynamicSource = FALSE, ColorBySampleName = "{{cellone}}",
-                                          ColorBySampleSource = "---", ColorBySampleDynamicSource = FALSE,
-                                          ShapeBy = "None", SizeBy = "None", SelectionAlpha = 0.1,
-                                          ZoomData = numeric(0), BrushData = list(), VisualBoxOpen = FALSE,
-                                          VisualChoices = c("Color", "Shape"), ContourAdd = FALSE,
-                                          ContourColor = "#0000FF", PointSize = 1, PointAlpha = 1,
-                                          Downsample = FALSE, DownsampleResolution = 200, CustomLabels = FALSE,
-                                          CustomLabelsText = "{{cellone}}", FontSize = 1,
-                                          LegendPointSize = 1, LegendPosition = "Bottom", HoverInfo = TRUE,
-                                          LabelCenters = FALSE, LabelCentersBy = "Barcode", LabelCentersColor = "#000000",
-                                          VersionInfo = list(iSEE = structure(list(c(2L, 4L, 0L)), class = c("package_version",
-                                                                                                             "numeric_version"))), PanelId = c(ReducedDimensionPlot = 1L),
-                                          PanelHeight = 600L, PanelWidth = 6L, SelectionBoxOpen = FALSE,
-                                          RowSelectionSource = "---", ColumnSelectionSource = "---",
-                                          DataBoxOpen = FALSE, RowSelectionDynamicSource = FALSE, ColumnSelectionDynamicSource = FALSE,
-                                          RowSelectionRestrict = FALSE, ColumnSelectionRestrict = TRUE,
-                                          SelectionHistory = list())
+plot.data <- data.frame(Y=assay(sce_small, 2, withDimnames=FALSE)[7711,], row.names = colnames(sce_small))
+plot.data$X <- colData(sce_small)[,"cellType"];
+plot.data$ColorBy <- colData(sce_small)[,"sum"];
+plot.data <- subset(plot.data, !is.na(X) & !is.na(Y));
+
+# Saving data for transmission
+all_coordinates[['featAssayPlot1']] <- plot.data
+
+# Setting up plot coordinates
+plot.data$GroupBy <- plot.data$X;
+set.seed(100);
+plot.data$jitteredX <- iSEE::jitterViolinPoints(plot.data$X, plot.data$Y, 
+                                                width=0.4, varwidth=FALSE, adjust=1,
+                                                method='quasirandom', nbins=NULL);
+
+# Creating the plot
+ggplot() +
+  geom_violin(aes(x = X, y = Y, group = GroupBy), alpha = 0.2, data=plot.data, scale = 'width', width = 0.8) +
+  geom_point(aes(y = Y, color = ColorBy, x = jitteredX), alpha = 1, plot.data, size=1) +
+  labs(x = "Cluster", y = "PF4 (logcounts)", color = "log10_total_counts", title = "PF4 vs Cluster") +
+  coord_cartesian(ylim = range(plot.data$Y, na.rm=TRUE), expand = TRUE) +
+  scale_color_gradientn(colors=colDataColorMap(colormap, "log10_total_counts", discrete=FALSE)(21), na.value='grey50', limits=range(plot.data$ColorBy, na.rm=TRUE)) +
+  scale_x_discrete(drop = FALSE) +
+  theme_bw() +
+  theme(legend.position = 'bottom', legend.text=element_text(size=9),
+        legend.title=element_text(size=11), legend.box = 'vertical',
+        axis.text.x = element_text(angle=90, size=10, hjust=1, vjust=0.5),
+        axis.text.y=element_text(size=10),
+        axis.title=element_text(size=12), title=element_text(size=12))
 
 ################################################################################
-# Settings for Complex heatmap 1
+## Column data plot 1
 ################################################################################
 
-initial[["ComplexHeatmapPlot1"]] <- new("ComplexHeatmapPlot", Assay = "logcounts", CustomRows = TRUE,
-                                        CustomRowsText = "{{cellmarkers}}", ClusterRows = FALSE,
-                                        ClusterRowsDistance = "spearman", ClusterRowsMethod = "ward.D2",
-                                        DataBoxOpen = FALSE, VisualChoices = "Annotations", ColumnData = c("cellType",
-                                                                                                           "donor"), RowData = character(0), CustomBounds = FALSE,
-                                        LowerBound = NA_real_, UpperBound = NA_real_, AssayCenterRows = FALSE,
-                                        AssayScaleRows = FALSE, DivergentColormap = "purple < black < yellow",
-                                        ShowDimNames = "Rows", LegendPosition = "Bottom", LegendDirection = "Horizontal",
-                                        VisualBoxOpen = FALSE, NamesRowFontSize = 10, NamesColumnFontSize = 10,
-                                        ShowColumnSelection = TRUE, OrderColumnSelection = TRUE,
-                                        VersionInfo = list(iSEE = structure(list(c(2L, 4L, 0L)), class = c("package_version",
-                                                                                                           "numeric_version"))), PanelId = 1L, PanelHeight = 600L, PanelWidth = 6L,
-                                        SelectionBoxOpen = FALSE, RowSelectionSource = "---", ColumnSelectionSource = "---",
-                                        RowSelectionDynamicSource = FALSE, ColumnSelectionDynamicSource = FALSE,
-                                        RowSelectionRestrict = FALSE, ColumnSelectionRestrict = FALSE,
-                                        SelectionHistory = list())
+plot.data <- data.frame(Y = colData(sce_small)[,"sum"], row.names=colnames(sce_small));
+plot.data$X <- colData(sce_small)[,"cellType"];
+plot.data$ColorBy <- colData(sce_small)[,"detected"];
+plot.data$ColorBy <- factor(plot.data$ColorBy);
+plot.data <- subset(plot.data, !is.na(X) & !is.na(Y));
+
+# Saving data for transmission
+all_coordinates[['colDataPlot1']] <- plot.data
+
+# Setting up plot coordinates
+plot.data$GroupBy <- plot.data$X;
+set.seed(100);
+plot.data$jitteredX <- iSEE::jitterViolinPoints(plot.data$X, plot.data$Y, 
+                                                width=0.4, varwidth=FALSE, adjust=1,
+                                                method='quasirandom', nbins=NULL);
+
+# Creating the plot
+ggplot() +
+  geom_violin(aes(x = X, y = Y, group = GroupBy), alpha = 0.2, data=plot.data, scale = 'width', width = 0.8) +
+  geom_point(aes(y = Y, color = ColorBy, x = jitteredX), alpha = 1, plot.data, size=1) +
+  labs(x = "Cluster", y = "log10_total_counts", color = "detected", title = "log10_total_counts vs Cluster") +
+  coord_cartesian(ylim = range(plot.data$Y, na.rm=TRUE), expand = TRUE) +
+  scale_color_manual(values=colDataColorMap(colormap, "detected", discrete=TRUE)(5198), na.value='grey50', drop=FALSE) +
+  scale_fill_manual(values=colDataColorMap(colormap, "detected", discrete=TRUE)(3), na.value='grey50', drop=FALSE) +
+  scale_x_discrete(drop = FALSE) +
+  theme_bw() +
+  theme(legend.position = 'bottom', legend.text=element_text(size=9),
+        legend.title=element_text(size=11), legend.box = 'vertical',
+        axis.text.x = element_text(angle=90, size=10, hjust=1, vjust=0.5),
+        axis.text.y=element_text(size=10),
+        axis.title=element_text(size=12), title=element_text(size=12))
 
 ################################################################################
-# Settings for Row data table 1
+## Heat map 1
 ################################################################################
 
-initial[["RowDataTable1"]] <- new("RowDataTable", Selected = "SNAP25", Search = "", SearchColumns = c("",
-                                                                                                      "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                                                                                                      "", "", "", "", "", "", "", "", "", "", ""), HiddenColumns = character(0),
-                                  VersionInfo = list(iSEE = structure(list(c(2L, 4L, 0L)), class = c("package_version",
-                                                                                                     "numeric_version"))), PanelId = c(RowDataTable = 1L), PanelHeight = 600L,
-                                  PanelWidth = 6L, SelectionBoxOpen = FALSE, RowSelectionSource = "---",
-                                  ColumnSelectionSource = "---", DataBoxOpen = FALSE, RowSelectionDynamicSource = FALSE,
-                                  ColumnSelectionDynamicSource = FALSE, RowSelectionRestrict = FALSE,
-                                  ColumnSelectionRestrict = FALSE, SelectionHistory = list())
+value.mat <- as.matrix(assay(sce_small, 2)[1L, , drop=FALSE]);
+plot.data <- reshape2::melt(value.mat, varnames = c('Y', 'X'));
+
+plot.data[['OrderBy1']] <- factor(colData(sce_small)[['cellType']][match(plot.data$X, rownames(colData(sce_small)))]);
+plot.data <- dplyr::arrange(plot.data, OrderBy1);
+plot.data$X <- factor(plot.data$X, levels = unique(plot.data$X));
+
+# Centering and scaling
+plot.data$value <- plot.data$value - ave(plot.data$value, plot.data$Y);
+
+# Creating the heat map
+p0 <- ggplot(plot.data, aes(x = X, y = Y)) +
+  geom_raster(aes(fill = value)) +
+  labs(x='', y='') +
+  scale_fill_gradientn(colors=c('purple','black','yellow'),
+                       values=c(0,0.5,1),
+                       limits=c(-5,5), na.value='grey50') +
+  scale_y_discrete(expand=c(0, 0)) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.line=element_blank());
+heatlegend <- cowplot::get_legend(p0 + theme(legend.position='bottom'));
+
+# Adding annotations
+legends <- list()
+
+p1 <- ggplot(plot.data, aes(x = X, y = 1)) +
+  geom_raster(aes(fill = OrderBy1)) +
+  labs(x='', y='') +
+  scale_y_continuous(breaks=1, labels='cellType') +
+  scale_fill_manual(values=colDataColorMap(colormap, 'cellType', discrete=TRUE)(19), na.value='grey50', drop=FALSE, name='cellType') +
+  theme(axis.text.x=element_blank(), axis.ticks=element_blank(), axis.title.x=element_blank(),
+        rect=element_blank(), line=element_blank(), axis.title.y=element_blank(),
+        plot.margin = unit(c(0,0,-0.5,0), 'lines'));
+legends[[1]] <- cowplot::get_legend(p1 + theme(legend.position='bottom', plot.margin = unit(c(0,0,0,0), 'lines')));
+
 
 ################################################################################
-# Settings for Feature assay plot 1
+## Reduced dimension plot 1
 ################################################################################
 
-initial[["FeatureAssayPlot1"]] <- new("FeatureAssayPlot", Assay = "logcounts", XAxis = "Column data",
-                                      XAxisColumnData = "cellType", XAxisFeatureName = "SNAP25",
-                                      XAxisFeatureSource = "---", XAxisFeatureDynamicSource = FALSE,
-                                      YAxisFeatureName = "SNAP25", YAxisFeatureSource = "RowDataTable1",
-                                      YAxisFeatureDynamicSource = TRUE, FacetRowByColData = "Barcode",
-                                      FacetColumnByColData = "Barcode", ColorByColumnData = "cellType",
-                                      ColorByFeatureNameAssay = "logcounts", ColorBySampleNameColor = "#FF0000",
-                                      ShapeByColumnData = "donor", SizeByColumnData = "sum", FacetRowBy = "None",
-                                      FacetColumnBy = "None", ColorBy = "Column data", ColorByDefaultColor = "#000000",
-                                      ColorByFeatureName = "SNAP25", ColorByFeatureSource = "---",
-                                      ColorByFeatureDynamicSource = FALSE, ColorBySampleName = "{{cellone}}",
-                                      ColorBySampleSource = "---", ColorBySampleDynamicSource = FALSE,
-                                      ShapeBy = "None", SizeBy = "None", SelectionAlpha = 0.1,
-                                      ZoomData = numeric(0), BrushData = list(), VisualBoxOpen = FALSE,
-                                      VisualChoices = "Color", ContourAdd = FALSE, ContourColor = "#0000FF",
-                                      PointSize = 1, PointAlpha = 1, Downsample = FALSE, DownsampleResolution = 200,
-                                      CustomLabels = FALSE, CustomLabelsText = "{{cellone}}",
-                                      FontSize = 1, LegendPointSize = 1, LegendPosition = "Bottom",
-                                      HoverInfo = TRUE, LabelCenters = FALSE, LabelCentersBy = "Barcode",
-                                      LabelCentersColor = "#000000", VersionInfo = list(iSEE = structure(list(
-                                        c(2L, 4L, 0L)), class = c("package_version", "numeric_version"
-                                        ))), PanelId = c(FeatureAssayPlot = 1L), PanelHeight = 600L,
-                                      PanelWidth = 6L, SelectionBoxOpen = FALSE, RowSelectionSource = "---",
-                                      ColumnSelectionSource = "---", DataBoxOpen = FALSE, RowSelectionDynamicSource = FALSE,
-                                      ColumnSelectionDynamicSource = FALSE, RowSelectionRestrict = FALSE,
-                                      ColumnSelectionRestrict = TRUE, SelectionHistory = list())
+red.dim <- reducedDim(sce_small, 2);
+plot.data <- data.frame(X = red.dim[, 1], Y = red.dim[, 2], row.names=colnames(sce_small));
+plot.data$ColorBy <- colData(sce_small)[,"detected"];
+plot.data$ColorBy <- factor(plot.data$ColorBy);
+plot.data <- subset(plot.data, !is.na(X) & !is.na(Y));
 
-iSEE(
-  sce_small,
-  appTitle = "HBCC testing iSEE using M.N. Tran et al 2021, DLPFC https://bit.ly/LIBD10xHuman",
-  initial = initial,
-  colormap = ExperimentColorMap(colData = list(
-    donor = function(n) {
-      cols <- RColorBrewer::brewer.pal(8, "Dark2")
-      names(cols) <- paste0("donor", seq_len(8))
-      return(cols)
-    },
-    cellType = function(n) {
-      cell_colors[!grepl("drop", names(cell_colors))]
-    }
-  ))
-)
+# Saving data for transmission
+all_coordinates[['redDimPlot1']] <- plot.data
+
+# Creating the plot
+ggplot() +
+  geom_point(aes(x = X, y = Y, color = ColorBy), alpha = 1, plot.data, size=1) +
+  labs(x = "Dimension 1", y = "Dimension 2", color = "detected", title = "(2) TSNE") +
+  coord_cartesian(xlim = range(plot.data$X, na.rm = TRUE),
+                  ylim = range(plot.data$Y, na.rm = TRUE), expand = TRUE) +
+  scale_color_manual(values=colDataColorMap(colormap, "detected", discrete=TRUE)(5198), na.value='grey50', drop=FALSE) +
+  scale_fill_manual(values=colDataColorMap(colormap, "detected", discrete=TRUE)(3), na.value='grey50', drop=FALSE) +
+  theme_bw() +
+  theme(legend.position = 'bottom', legend.box = 'vertical', legend.text=element_text(size=9), legend.title=element_text(size=11),
+        axis.text=element_text(size=10), axis.title=element_text(size=12), title=element_text(size=12))
 
 
 
+
+# Laying out the grid
+cowplot::plot_grid(
+  cowplot::plot_grid(
+    p1 + theme(legend.position='none'),
+    p0 + theme(legend.position='none'),
+    ncol=1, align='v', rel_heights=c(0.1, 1)),
+  heatlegend, ncol=1, rel_heights=c(0.9, 0.1))
+
+################################################################################
+## To guarantee the reproducibility of your code, you should also
+## record the output of sessionInfo()
+sessionInfo()
