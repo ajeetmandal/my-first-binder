@@ -1,3 +1,7 @@
+# ignore the big file
+shinyR_HBCCtest-2/SCE_DLPFC-n3_tran-etal.rda
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
