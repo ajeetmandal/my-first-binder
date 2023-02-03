@@ -1,15 +1,22 @@
 ###################################################################
+
+setwd("/Users/mandala2/OneDrive - National Institutes of Health/GitHub/my-first-binder/shinyR_HBCCtest-2/")
 library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
 ###########################################
-sce_small <- readRDS("small_sce_v1.rds")
+sce_small1 <- readRDS("sce_subset1.rds")
+sce_small2 <- readRDS("sce_subset2.rds")
+sce_small3 <- readRDS("sce_subset3.rds")
+sce_small4 <- readRDS("sce_subset4.rds")
+
+# Combining:
+sce_small <- cbind(sce_small1, sce_small2, sce_small3, sce_small4)
 #class(sce_small)
 #sce_small@colData
 #iSEE(sce_small)
 ###########################################
 # Updated
-
 cell_colors <- readRDS("cell_colors_dlpfc.rds")
 stopifnot(packageVersion("iSEE") >= "2.4.0")
 
@@ -54,8 +61,11 @@ initial[["ReducedDimensionPlot1"]] <- new("ReducedDimensionPlot", Type = "PCA_co
 # Settings for Complex heatmap 1
 ################################################################################
 
-initial[["ComplexHeatmapPlot1"]] <- new("ComplexHeatmapPlot", Assay = "logcounts", CustomRows = TRUE,
-                                        CustomRowsText = "{{cellmarkers}}", ClusterRows = FALSE,
+initial[["ComplexHeatmapPlot1"]] <- new("ComplexHeatmapPlot", Assay = "sum", CustomRows = TRUE,
+                                        CustomRowsText = "SNAP25
+SLC17A6
+SLC17A7
+SLC17A8", ClusterRows = FALSE,
                                         ClusterRowsDistance = "spearman", ClusterRowsMethod = "ward.D2",
                                         DataBoxOpen = FALSE, VisualChoices = "Annotations", ColumnData = c("cellType",
                                                                                                            "donor"), RowData = character(0), CustomBounds = FALSE,
@@ -116,9 +126,12 @@ initial[["FeatureAssayPlot1"]] <- new("FeatureAssayPlot", Assay = "logcounts", X
                                       ColumnSelectionDynamicSource = FALSE, RowSelectionRestrict = FALSE,
                                       ColumnSelectionRestrict = TRUE, SelectionHistory = list())
 
+
+
+
 iSEE(
   sce_small,
-  appTitle = "HBCC testing iSEE using M.N. Tran et al 2021, DLPFC https://bit.ly/LIBD10xHuman",
+  appTitle = "M.N. Tran et al 2021, {{region}} region https://bit.ly/LIBD10xHuman",
   initial = initial,
   colormap = ExperimentColorMap(colData = list(
     donor = function(n) {
