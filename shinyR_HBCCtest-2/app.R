@@ -1,6 +1,4 @@
 ###################################################################
-
-setwd("/Users/mandala2/OneDrive - National Institutes of Health/GitHub/my-first-binder/shinyR_HBCCtest-2/")
 library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
