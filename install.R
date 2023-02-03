@@ -1,16 +1,16 @@
 if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+  install.packages("BiocManager")
+
 BiocManager::install("iSEE")
-
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
 BiocManager::install("SingleCellExperiment")
+BiocManager::install("scMerge")
 
-install.packages("shiny")
+# install.packages("shiny")
 
 
-install.packages("tidyverse")
-install.packages("rmarkdown")
-install.packages("httr")
-install.packages("shinydashboard")
-install.packages('leaflet')
+# install.packages("tidyverse")
+# install.packages("rmarkdown")
+# install.packages("httr")
+# install.packages("shinydashboard")
+# install.packages('leaflet')
+
