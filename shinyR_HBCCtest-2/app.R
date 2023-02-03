@@ -3,10 +3,10 @@ library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
 ###########################################
-sce_small1 <- readRDS("sce_subset1.rds")
-sce_small2 <- readRDS("sce_subset2.rds")
-sce_small3 <- readRDS("sce_subset3.rds")
-sce_small4 <- readRDS("sce_subset4.rds")
+sce_small1 <- readRDS("sce_subset1.RDS")
+sce_small2 <- readRDS("sce_subset2.RDS")
+sce_small3 <- readRDS("sce_subset3.RDS")
+sce_small4 <- readRDS("sce_subset4.RDS")
 
 # Combining:
 sce_small <- cbind(sce_small1, sce_small2, sce_small3, sce_small4)
