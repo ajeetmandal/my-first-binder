@@ -2,6 +2,7 @@
 library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
+library("scMerge")
 ###########################################
 sce_small <- readRDS("sce_subset1.RDS")
 
