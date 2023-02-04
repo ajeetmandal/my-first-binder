@@ -3,7 +3,7 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install("iSEE")
 BiocManager::install("SingleCellExperiment")
-BiocManager::install("scMerge")
+#BiocManager::install("scMerge")
 
 # install.packages("shiny")
 
