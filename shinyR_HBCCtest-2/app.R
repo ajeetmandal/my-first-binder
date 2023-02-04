@@ -2,22 +2,13 @@
 library("SingleCellExperiment")
 library("iSEE")
 library("shiny")
-library("scMerge")
 ###########################################
-sce_small <- readRDS("sce_subset1.RDS")
+sce_small <- load("SCE_DLPFC-n3_tran-etal.rda")
+sce_small <- sce.dlpfc.tran
 
-# sce_small1 <- readRDS("sce_subset1.RDS")
-# sce_small2 <- readRDS("sce_subset2.RDS")
-# sce_small3 <- readRDS("sce_subset3.RDS")
-# sce_small4 <- readRDS("sce_subset4.RDS")
 
-# Combining:
-# sce_small <- cbind(sce_small1, sce_small2, sce_small3, sce_small4)
-#class(sce_small)
-#sce_small@colData
-#iSEE(sce_small)
 ###########################################
-# Updated
+# read colors
 cell_colors <- readRDS("cell_colors_dlpfc.rds")
 stopifnot(packageVersion("iSEE") >= "2.4.0")
 
