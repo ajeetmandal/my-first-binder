@@ -1,7 +1,7 @@
 ###################################################################
-library("SingleCellExperiment")
 library("iSEE")
-library("shiny")
+#library("SingleCellExperiment") # dont need them as "iSEE" have these all
+#library("shiny") # dont need them as "iSEE" have these all
 ###########################################
 sce_small <- load("SCE_DLPFC-n3_tran-etal.rda")
 sce_small <- sce.dlpfc.tran
