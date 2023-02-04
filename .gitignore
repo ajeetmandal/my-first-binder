@@ -1,3 +1,9 @@
+# ignore the big file
+#shinyR_HBCCtest-2/SCE_DLPFC-n3_tran-etal.rda
+# and a mac specific file
+#.DS_Store
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
