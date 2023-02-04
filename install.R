@@ -2,10 +2,10 @@ if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
 BiocManager::install("iSEE")
-BiocManager::install("SingleCellExperiment")
+#BiocManager::install("SingleCellExperiment") # Dont need this as "iSEE" has this
 #BiocManager::install("scMerge")
 
-# install.packages("shiny")
+# install.packages("shiny")  # Dont need this as "iSEE" has this
 
 
 # install.packages("tidyverse")
