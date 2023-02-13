@@ -3,6 +3,11 @@ library("iSEE")
 #library("SingleCellExperiment") # dont need them as "iSEE" have these all
 #library("shiny") # dont need them as "iSEE" have these all
 ###########################################
+# Fetch the data from FigShare
+dat <- ("https://figshare.com/ndownloader/files/39149009/SCE_DLPFC-n3_tran-etal.rda")
+download.file(dat, destfile = "SCE_DLPFC-n3_tran-etal.rda")
+
+
 sce_small <- load("SCE_DLPFC-n3_tran-etal.rda")
 sce_small <- sce.dlpfc.tran
 
